@@ -1,10 +1,8 @@
 const defaultSubjects = [
-    { name: "কালিমা ও আসমাউল হুসনাহ", optional: false },
-    { name: "বাংলা", optional: false },
+    { name: "বাংলা", optional: true },
     { name: "ইংরেজী", optional: false },
-    { name: "কুরআন মাজীদ ও তাজভীদ", optional: false },
-    { name: "আরবী লেখা", optional: true },
-    { name: "মাসআলাহ ও আদইয়্যায়ে সলাহ", optional: true }
+    { name: "কুরআন মাজীদ ও তাজভীদ", optional: true },
+    { name: "আরবী লেখা", optional: false }
 ];
 
 const defaultGrades = [
@@ -16,15 +14,15 @@ const defaultGrades = [
 ];
 
 const defaultStudents = [
-    { dakhila: "2601", name: "মোঃ শোয়াইব ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [90, 95, 85, 90, 75, 80] },
-    { dakhila: "2603", name: "সাএদা ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [88, 60, 100, 100, 20, 15] } // এখানে অপশোনালে ফেল থাকা সত্ত্বেও মোট নম্বরের ওপর ভিত্তি করে কম পয়েন্ট/গ্রেড আসবে
+    { dakhila: "2634", name: "সাএদা ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [87, 89, 89, 70] },
+    { dakhila: "2671", name: "মোঃ শোয়াইব ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [10, 60, 20, 70] }
 ];
 
 const defaultHeaderInfo = {
-    madrasaName: "দারুল উলূম নূরুল হারামাইন মাদরাসা",
+    madrasaName: "Nurul haramain",
     madrasaAddress: "সখিপুর পৌরসভা, সখিপুর, টাঙ্গাইল।",
     examTitle: "বেফাকুল মাদারিসিল আরাবিয়া বাংলাদেশ - ২০২৬",
-    classTitle: "জামাত: দ্বিতীয় শ্রেণী",
+    classTitle: "জামাত: হিফজ বিভাগ - ৩পারা",
     logoData: null
 };
 
@@ -60,11 +58,13 @@ function calculateResult(marks) {
     
     let generalFailed = false;
 
-    // শুধুমাত্র জেনারেল (মূল) বিষয়গুলোতে ৩৩ এর নিচে পেলে ফেল ধরা হবে। অপশোনালে ফেল করলে ফেল ধরবে না।
+    // নিখুঁতভাবে চেক করা হচ্ছে সাবজেক্টটি ঐচ্ছিক কি না
     marks.forEach((m, idx) => {
         const sub = subjectsList[idx];
-        const isOptional = typeof sub === 'object' && sub.optional;
+        const isOptional = (typeof sub === 'object' && sub.optional === true) || 
+                           (typeof sub === 'string' && sub.includes('ঐচ্ছিক'));
         
+        // যদি জেনারেল (মূল) সাবজেক্টে ৩৩ এর নিচে পায় তবেই কেবল জেনারেল ফেল ধরবে
         if (Number(m) < 33 && !isOptional) {
             generalFailed = true;
         }
@@ -72,15 +72,17 @@ function calculateResult(marks) {
 
     let passed = true;
     if (isWifaqMode) {
+        // বেফাক মোড বা আমাদের শর্ত অনুযায়ী জেনারেল সাবজেক্টে পাস থাকলে অপশোনালে ফেল করলেও পাস করবে
         if (generalFailed) {
             passed = false;
         } else {
-            passed = true; // অপশোনালে ফেল থাকলেও শিক্ষার্থী পাস করবে
+            passed = true;
         }
     } else {
         const hasGeneralFail = marks.some((m, idx) => {
             const sub = subjectsList[idx];
-            const isOpt = typeof sub === 'object' && sub.optional;
+            const isOpt = (typeof sub === 'object' && sub.optional === true) || 
+                          (typeof sub === 'string' && sub.includes('ঐচ্ছিক'));
             return Number(m) < 33 && !isOpt;
         });
         const passMarkSum = totalSubjects * 33;
@@ -158,10 +160,15 @@ function renderTableHeaders() {
     let subHeadersHtml = '';
     subjectsList.forEach((sub) => {
         const subName = typeof sub === 'string' ? sub : sub.name;
-        const isOpt = typeof sub === 'object' && sub.optional ? ' (ঐচ্ছিক)' : '';
+        const isOptProp = typeof sub === 'object' && sub.optional === true;
+        const isOptName = subName.includes('ঐচ্ছিক');
+        const isOpt = (isOptProp || isOptName);
+        
+        const displayName = isOptName ? subName : (isOpt ? `${subName} (ঐচ্ছিক)` : subName);
+
         subHeadersHtml += `
             <th style="min-width: 65px;">
-                ${subName}${isOpt}<br>
+                ${displayName}<br>
                 <span style="font-size: 11px; font-weight: normal; color: #333;">পূর্ণমান - 100</span>
             </th>
         `;
