@@ -15,8 +15,8 @@ const defaultGrades = [
 ];
 
 const defaultStudents = [
-    { dakhila: "2671", name: "মোঃ শোয়াইব ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [90, 95, 85, 90, 75] },
-    { dakhila: "2634", name: "সাএদা ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [88, 25, 30, 89, 70] }
+    { dakhila: "2601", name: "মোঃ শোয়াইব ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [90, 95, 85, 90, 75] },
+    { dakhila: "2603", name: "সাএদা ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [88, 25, 30, 89, 70] }
 ];
 
 const defaultHeaderInfo = {
@@ -57,21 +57,32 @@ function calculateResult(marks) {
     const maxTotal = totalSubjects * 100;
     const total = marks.reduce((sum, m) => sum + Number(m), 0);
     
-    let failCount = 0;
-    marks.forEach((m) => {
+    let generalFailed = false;
+    let optionalFailed = false;
+
+    marks.forEach((m, idx) => {
+        const sub = subjectsList[idx];
+        const isOptional = typeof sub === 'object' && sub.optional;
+        
         if (Number(m) < 33) {
-            failCount++;
+            if (isOptional) {
+                optionalFailed = true;
+            } else {
+                generalFailed = true;
+            }
         }
     });
 
     let passed = true;
     if (isWifaqMode) {
-        if (failCount > 2) {
+        // বেফাক মোড: জেনারেল বিষয়ে ফেল করলে সরাসরি ফেল। তবে শুধু ঐচ্ছিক (optional) বিষয়ে ফেল করলে পাস ধরবে।
+        if (generalFailed) {
             passed = false;
         } else {
-            passed = true;
+            passed = true; 
         }
     } else {
+        // সাধারণ মোড: যেকোনো বিষয়ে ফেল করলেই ফেল
         const hasFailedSubject = marks.some(m => Number(m) < 33);
         const passMarkSum = totalSubjects * 33;
         if (hasFailedSubject || total < passMarkSum) {
@@ -80,7 +91,7 @@ function calculateResult(marks) {
     }
 
     if (!passed) {
-        return { total, maxTotal, grade: "রাসিব (F)", point: "0.00", passed: false, failCount };
+        return { total, maxTotal, grade: "রাসিব (F)", point: "0.00", passed: false };
     }
 
     const percentage = (total / maxTotal) * 100;
@@ -92,7 +103,7 @@ function calculateResult(marks) {
         }
     }
 
-    return { total, maxTotal, grade: matchedGrade.grade, point: matchedGrade.point.toFixed(2), passed: true, failCount };
+    return { total, maxTotal, grade: matchedGrade.grade, point: matchedGrade.point.toFixed(2), passed: true };
 }
 
 function computeMeritRanks(studentList) {
@@ -196,8 +207,9 @@ function renderTable() {
 
         const tr = document.createElement('tr');
         let marksCells = '';
-        st.marks.forEach(m => {
+        st.marks.forEach((m, mIdx) => {
             const isFail = Number(m) < 33;
+            // যে ঘরে ফেল করবে (জেনারেল হোক বা ঐচ্ছিক), সেই ঘরেই লাল রঙ ও ছাইরঙ ব্যাকগ্রাউন্ড ক্লাস বসে যাবে
             marksCells += `<td class="${isFail ? 'fail-mark' : ''}">${m}</td>`;
         });
 
@@ -588,8 +600,8 @@ function viewMarksheet(index) {
                 <td style="border: 1px solid #15803d; padding: 6px; text-align: left; padding-left: 10px;">${subName}${isOpt}</td>
                 <td style="border: 1px solid #15803d; padding: 6px;">100</td>
                 <td style="border: 1px solid #15803d; padding: 6px; font-weight: bold; color: ${isFail ? 'red' : '#000'};">${mark}</td>
-                <td style="border: 1px solid #15803d; padding: 6px;">${isFail ? 'রাসিব' : res.grade}</td>
-                <td style="border: 1px solid #15803d; padding: 6px;">${isFail ? '0.00' : res.point}</td>
+                <td style="border: 1px solid #15803d; padding: 6px;">${!res.passed && isFail ? 'রাসিব' : res.grade}</td>
+                <td style="border: 1px solid #15803d; padding: 6px;">${!res.passed && isFail ? '0.00' : res.point}</td>
             </tr>
         `;
     });
