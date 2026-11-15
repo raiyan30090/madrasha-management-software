@@ -94,7 +94,7 @@ body { font-family: 'Hind Siliguri', 'Noto Serif Bengali', sans-serif; backgroun
     background: #ffffff !important;
 }
 
-/* ================= প্রিন্ট মিডিয়া স্টাইল (ফাঁকা পেজ সমস্যা সমাধান) ================= */
+/* ================= প্রিন্ট মিডিয়া স্টাইল ================= */
 @media print {
     body {
         background: #ffffff !important;
@@ -114,7 +114,6 @@ body { font-family: 'Hind Siliguri', 'Noto Serif Bengali', sans-serif; backgroun
         display: none !important;
     }
 
-    /* যখন ব্যক্তিগত মার্কশিট মোডাল ওপেন থাকবে, তখন ট্যাবুলেশন শিট হাইড হবে */
     body:has(#marksheetModal[style*="flex"]) .sheet-container {
         display: none !important;
     }

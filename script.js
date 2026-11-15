@@ -1,26 +1,12 @@
-const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-function toBanglaNumber(num) {
-    if (num === null || num === undefined) return '';
-    return num.toString().replace(/\d/g, d => bnDigits[d]);
-}
-function toEnglishNumber(str) {
-    if (!str) return '';
-    return str.toString().replace(/[০-৯]/g, d => bnDigits.indexOf(d));
-}
-
 const defaultSubjects = [
     "কালিমা ও আসমাউল হুসনাহ",
     "বাংলা",
     "ইংরেজী",
-    "কুরআন মাজীদ ও তাজভীদ",
-    "আরবী লেখা",
-    "মাসআলাহ ও আদইয়ায়ে সলাহ",
-    "গণিত",
-    "হাদিস শরীফ ও আদইয়ায়ে মাসনূনাহ"
+    "কুরআন মাজীদ ও তাজভীদ"
 ];
 
 const defaultGrades = [
-    { grade: "A+", range: "৮০% বা তদূর্ধ্ব", point: 5.00, minPercent: 80 },
+    { grade: "A+", range: "৮০% - ১০০%", point: 5.00, minPercent: 80 },
     { grade: "A", range: "৭০% - ৭৯%", point: 4.00, minPercent: 70 },
     { grade: "A-", range: "৬০% - ৬৯%", point: 3.50, minPercent: 60 },
     { grade: "B", range: "৫০% - ৫৯%", point: 3.00, minPercent: 50 },
@@ -30,16 +16,15 @@ const defaultGrades = [
 ];
 
 const defaultStudents = [
-    { dakhila: "26001", name: "মোঃ শোয়াইব ইসলাম", father: "মোঃ আব্দুল করিম", mother: "ফাতেমা বেগম", location: "সখিপুর, টাঙ্গাইল", marks: [100, 98, 100, 100, 100, 100, 100, 100] },
-    { dakhila: "26002", name: "মোঃ এস, এম, আবু বকর", father: "মোঃ রফিকুল ইসলাম", mother: "আয়েশা খাতুন", location: "কাকড়াজান, সখিপুর", marks: [100, 100, 100, 97, 100, 100, 100, 100] },
-    { dakhila: "26003", name: "সাএদা ইসলাম", father: "আব্দুল লতিফ", mother: "সাজেদা বেগম", location: "বটতলা, সখিপুর", marks: [100, 100, 100, 100, 99, 100, 97, 100] }
+    { dakhila: "2671", name: "মোঃ শোয়াইব ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [90, 95, 85, 90] },
+    { dakhila: "2634", name: "সাএদা ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [88, 85, 90, 89] }
 ];
 
 const defaultHeaderInfo = {
     madrasaName: "দারুল উলূম নূরুল হারামাইন মাদরাসা",
     madrasaAddress: "সখিপুর পৌরসভা, সখিপুর, টাঙ্গাইল।",
-    examTitle: "দ্বিতীয় সাময়িক পরীক্ষা : ২০২৬",
-    classTitle: "জামাত: দ্বিতীয় শ্রেণী",
+    examTitle: "দ্বিতীয় সাময়িক পরীক্ষা: ২০২৬",
+    classTitle: "জামাত: হিফজ বিভাগ - ৩পারা",
     logoData: null
 };
 
@@ -73,8 +58,8 @@ function calculateResult(marks) {
 
 function computeMeritRanks(studentList) {
     const enriched = studentList.map((st, idx) => {
-        if(!st.father) st.father = "Sakibullah";
-        if(!st.mother) st.mother = "Sakina Begum";
+        if(!st.father) st.father = "প্রযোজ্য নয়";
+        if(!st.mother) st.mother = "প্রযোজ্য নয়";
         if(!st.location) st.location = "সখিপুর, টাঙ্গাইল";
 
         while(st.marks.length < subjectsList.length) st.marks.push(80);
@@ -125,7 +110,7 @@ function renderTableHeaders() {
         subHeadersHtml += `
             <th style="min-width: 65px;">
                 ${sub}<br>
-                <span style="font-size: 11px; font-weight: normal; color: #be0000;">পূর্ণমান - 100</span>
+                <span style="font-size: 11px; font-weight: normal; color: #333;">পূর্ণমান - 100</span>
             </th>
         `;
     });
@@ -135,7 +120,8 @@ function renderTableHeaders() {
         <th style="width: 55px;">দাখিলা</th>
         <th class="col-name">পরীক্ষার্থীর নাম</th>
         ${subHeadersHtml}
-        <th style="width: 50px;">মোট</th>
+        <th style="width: 65px; background: #fef3c7; color: #78350f;">মোট নম্বর</th>
+        <th style="width: 65px; background: #ecfdf5; color: #065f46;">প্রাপ্ত নম্বর</th>
         <th style="width: 45px;">গ্রেড</th>
         <th style="width: 48px;">পয়েন্ট</th>
         <th style="width: 42px;">মেধা</th>
@@ -163,33 +149,34 @@ function renderTable() {
     let serial = 1;
     rankedStudents.forEach((st) => {
         const matchName = st.name.toLowerCase().includes(searchQuery);
-        const matchDakhila = toBanglaNumber(st.dakhila).includes(searchQuery) || toEnglishNumber(st.dakhila).includes(searchQuery);
+        const matchDakhila = st.dakhila.toLowerCase().includes(searchQuery);
         if (searchQuery && !matchName && !matchDakhila) return;
 
         const tr = document.createElement('tr');
         let marksCells = '';
         st.marks.forEach(m => {
             const isFail = Number(m) < 33;
-            // এখানে নম্বরগুলো ইংরেজি সংখ্যা হিসেবে রেন্ডার হবে
             marksCells += `<td class="${isFail ? 'fail-mark' : ''}">${m}</td>`;
         });
 
-        let meritDisplay = st.passed ? toBanglaNumber(st.merit) : '-';
-        if (st.merit === 1 && st.passed) meritDisplay = 'প্রথম স্থান 🏆';
-        else if (st.merit === 2 && st.passed) meritDisplay = 'দ্বিতীয় স্থান 🥈';
-        else if (st.merit === 3 && st.passed) meritDisplay = 'তৃতীয় স্থান 🥉';
+        let meritDisplay = st.passed ? st.merit : '-';
+        if (st.merit === 1 && st.passed) meritDisplay = '1st';
+        else if (st.merit === 2 && st.passed) meritDisplay = '2nd';
+        else if (st.merit === 3 && st.passed) meritDisplay = '3rd';
+        else if (st.passed) meritDisplay = `${st.merit}th`;
 
         tr.innerHTML = `
-            <td>${toBanglaNumber(serial++)}</td>
-            <td>${toBanglaNumber(st.dakhila)}</td>
+            <td>${serial++}</td>
+            <td>${st.dakhila}</td>
             <td class="col-name">${st.name}</td>
             ${marksCells}
-            <td style="font-weight: 700;">${st.total}</td>
+            <td style="font-weight: 700; background: #fffbeb;">${st.maxTotal}</td>
+            <td style="font-weight: 700; background: #f0fdf4; color: #15803d;">${st.total}</td>
             <td class="${!st.passed ? 'grade-f' : ''}" style="font-weight: 600;">${st.grade}</td>
             <td>${st.point}</td>
             <td style="font-weight: 600;">${meritDisplay}</td>
             <td class="no-print action-cell">
-                <button class="icon-btn" title="মার্কশিট" onclick="viewMarksheet(${st.originalIndex}, '${meritDisplay}')">Marksheet</button>
+                <button class="icon-btn" title="মার্কশিট" onclick="viewMarksheet(${st.originalIndex})">Marksheet</button>
                 <button class="icon-btn" title="এডিট" onclick="openEditModal(${st.originalIndex})">Edit</button>
                 <button class="icon-btn del" title="ডিলিট" onclick="deleteStudent(${st.originalIndex})">Delete</button>
             </td>
@@ -205,7 +192,7 @@ function openBulkEntryModal() {
         subjectsList.forEach((sub) => {
             thHtml += `<th>${sub} <br><span style="font-size:10px; font-weight:normal;">(100)</span></th>`;
         });
-        thHtml += `<th style="width:50px;">Delete</th>`;
+        thHtml += `<th style="width:50px;">অ্যাকশন</th>`;
         theadRow.innerHTML = thHtml;
     }
 
@@ -229,7 +216,7 @@ function renderBulkRows() {
             tdHtml += `<td><input type="number" min="0" max="100" class="b-mark-${subIndex}" value="${mark}" style="width:55px; padding:4px; text-align:center; border:1px solid #cbd5e1; border-radius:4px;"></td>`;
         });
 
-        tdHtml += `<td><button type="button" class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="removeBulkRow(this)">❌</button></td>`;
+        tdHtml += `<td><button type="button" class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="removeBulkRow(this)">Remove</button></td>`;
         tbody.innerHTML += `<tr class="bulk-row">${tdHtml}</tr>`;
     });
 }
@@ -240,14 +227,14 @@ function addBulkRow() {
 
     let tdHtml = `
         <td><input type="text" class="b-dakhila" value="" placeholder="রোল" style="width:55px; padding:4px; text-align:center; border:1px solid #cbd5e1; border-radius:4px;"></td>
-        <td style="text-align:left; padding-left:8px;"><input type="text" class="b-name" value="" placeholder="শিক্ষার্থীর নাম" style="width:130px; padding:4px; border:1px solid #cbd5e1; border-radius:4px;"></td>
+        <td style="text-align:left; padding-left:8px;"><input type="text" class="b-name" value="" placeholder="নাম" style="width:130px; padding:4px; border:1px solid #cbd5e1; border-radius:4px;"></td>
     `;
 
     subjectsList.forEach((sub, subIndex) => {
         tdHtml += `<td><input type="number" min="0" max="100" class="b-mark-${subIndex}" value="80" style="width:55px; padding:4px; text-align:center; border:1px solid #cbd5e1; border-radius:4px;"></td>`;
     });
 
-    tdHtml += `<td><button type="button" class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="removeBulkRow(this)">Delete</button></td>`;
+    tdHtml += `<td><button type="button" class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="removeBulkRow(this)">Remove</button></td>`;
     
     const tr = document.createElement('tr');
     tr.className = 'bulk-row';
@@ -282,8 +269,8 @@ function saveBulkMarks() {
             newStudentsList.push({
                 dakhila: dakhilaVal,
                 name: nameVal,
-                father: "Sakibullah",
-                mother: "Sakina Begum",
+                father: "প্রযোজ্য নয়",
+                mother: "প্রযোজ্য নয়",
                 location: "সখিপুর, টাঙ্গাইল",
                 marks: marksArr
             });
@@ -454,10 +441,10 @@ function renderSubjectManagerList() {
     subjectsList.forEach((sub, i) => {
         container.innerHTML += `
             <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
-                <span style="font-weight:bold; width:25px;">${toBanglaNumber(i+1)}.</span>
+                <span style="font-weight:bold; width:25px;">${i+1}.</span>
                 <input type="text" id="subInput_${i}" value="${sub}" style="flex-grow:1; padding:5px; border:1px solid #cbd5e1; border-radius:4px;">
-                <button class="btn btn-danger" style="padding:4px 8px; font-size:12px;" onclick="removeSubject(${i})">Delete</button>
-                <button class="btn btn-primary" style="padding:4px 8px; font-size:12px;" onclick="updateSingleSubject(${i})">Save</button>
+                <button class="btn btn-danger" style="padding:4px 8px; font-size:12px;" onclick="removeSubject(${i})">Remove</button>
+                <button class="btn btn-primary" style="padding:4px 8px; font-size:12px;" onclick="updateSingleSubject(${i})">Update</button>
             </div>
         `;
     });
@@ -509,15 +496,17 @@ function generateModalSubjectInputs(studentMarks = null) {
         const val = studentMarks ? studentMarks[i] : 80;
         container.innerHTML += `
             <div class="form-group">
-                <label>${toBanglaNumber(i+1)}. ${sub} (১০০)</label>
+                <label>${i+1}. ${sub} (100)</label>
                 <input type="number" id="modalSub_${i}" min="0" max="100" required value="${val}">
             </div>
         `;
     });
 }
 
-function viewMarksheet(index, merit) {
+function viewMarksheet(index) {
     const st = students[index];
+    const rankedList = computeMeritRanks(students);
+    const currentStudent = rankedList.find(s => s.originalIndex === index);
     const res = calculateResult(st.marks);
 
     document.getElementById('mMadrasaName').innerText = headerInfo.madrasaName;
@@ -526,20 +515,20 @@ function viewMarksheet(index, merit) {
     document.getElementById('mClassTitle').innerText = headerInfo.classTitle;
 
     document.getElementById('mName').innerText = st.name;
-    document.getElementById('mDakhila').innerText = toBanglaNumber(st.dakhila);
-    document.getElementById('mFather').innerText = st.father || "Sakibullah";
-    document.getElementById('mMother').innerText = st.mother || "Sakina Begum";
+    document.getElementById('mDakhila').innerText = st.dakhila;
+    document.getElementById('mFather').innerText = st.father || "প্রযোজ্য নয়";
+    document.getElementById('mMother').innerText = st.mother || "প্রযোজ্য নয়";
     document.getElementById('mLocation').innerText = st.location || "সখিপুর, টাঙ্গাইল";
 
     let rowsHtml = '';
     subjectsList.forEach((sub, i) => {
-        const mark = st.marks[i]; // ইংরেজি সংখ্যা হিসেবে নম্বর রাখা হয়েছে
+        const mark = st.marks[i];
         const isFail = mark < 33;
         rowsHtml += `
             <tr>
-                <td style="border: 1px solid #15803d; padding: 6px;">${toBanglaNumber(i+1)}</td>
+                <td style="border: 1px solid #15803d; padding: 6px;">${i+1}</td>
                 <td style="border: 1px solid #15803d; padding: 6px; text-align: left; padding-left: 10px;">${sub}</td>
-                <td style="border: 1px solid #15803d; padding: 6px;">১০০</td>
+                <td style="border: 1px solid #15803d; padding: 6px;">100</td>
                 <td style="border: 1px solid #15803d; padding: 6px; font-weight: bold; color: ${isFail ? 'red' : '#000'};">${mark}</td>
                 <td style="border: 1px solid #15803d; padding: 6px;">${isFail ? 'F' : res.grade}</td>
                 <td style="border: 1px solid #15803d; padding: 6px;">${isFail ? '0.00' : res.point}</td>
@@ -548,15 +537,24 @@ function viewMarksheet(index, merit) {
     });
 
     document.getElementById('mSubjectsTableBody').innerHTML = rowsHtml;
+    document.getElementById('mTotalMaxMarks').innerText = res.maxTotal;
     document.getElementById('mTotalObtained').innerText = res.total;
-    document.getElementById('mFinalGrade').innerText = res.grade;
-    document.getElementById('mFinalPoint').innerText = res.point;
+    document.getElementById('mFinalGradePoint').innerText = `${res.grade} (${res.point})`;
     
+    let meritText = '-';
+    if (currentStudent && currentStudent.passed) {
+        const rank = currentStudent.merit;
+        if (rank === 1) meritText = "1st";
+        else if (rank === 2) meritText = "2nd";
+        else if (rank === 3) meritText = "3rd";
+        else meritText = `${rank}th`;
+    }
+
     const passStatusEl = document.getElementById('mPassStatus');
     passStatusEl.innerText = res.passed ? "কৃতকার্য" : "অকৃতকার্য";
     passStatusEl.style.color = res.passed ? "#15803d" : "#dc2626";
     
-    document.getElementById('mMeritRank').innerText = merit;
+    document.getElementById('mMeritRank').innerText = meritText;
 
     document.getElementById('marksheetModal').style.display = 'flex';
 }
