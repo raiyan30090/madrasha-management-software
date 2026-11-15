@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>মাদরাসা রেজাল্ট ও ট্যাবুলেশন ম্যানেজমেন্ট</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- কন্ট্রোল প্যানেল -->
+    <div class="control-bar no-print">
+        <div class="control-title">
+            <span>🕌</span> মাদরাসা রেজাল্ট ম্যানেজমেন্ট সিস্টেম
+        </div>
+        
+        <div class="control-actions">
+            <input type="text" id="searchInput" class="search-box" placeholder="নাম বা দাখিলা নং খুঁজুন..." onkeyup="renderTable()">
+            
+            <button class="btn btn-primary" onclick="openAddModal()">
+                <span>➕</span> নতুন শিক্ষার্থী
+            </button>
+
+            <button class="btn btn-blue" onclick="openBulkEntryModal()">
+                <span>📝</span> একসাথে নম্বর এন্ট্রি
+            </button>
+            
+            <button class="btn btn-warning" onclick="openHeaderModal()">
+                <span>✏️</span> প্রতিষ্ঠান ও লোগো
+            </button>
+
+            <button class="btn btn-success" onclick="openSubjectManagerModal()">
+                <span>📚</span> বিষয় ম্যানেজ
+            </button>
+
+            <button class="btn btn-primary" style="background: #7c3aed;" onclick="openGradeManagerModal()">
+                <span>📊</span> গ্রেড বিন্যাস
+            </button>
+
+            <button class="btn btn-primary" onclick="window.print()">
+                <span>🖨️</span> প্রিন্ট / PDF
+            </button>
+
+            <button class="btn btn-danger" onclick="resetDefaultData()">
+                <span>🔄</span> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- মূল প্রিন্টেবল ট্যাবুলেশন শিট -->
+    <div class="sheet-container">
+        
+        <!-- হেডার সেকশন -->
+        <div class="header-section">
+            <div class="logo-box" id="logoContainer">
+                <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="60" cy="56" r="46" fill="none" stroke="#15803d" stroke-width="4"/>
+                    <circle cx="60" cy="56" r="40" fill="#f0fdf4" stroke="#15803d" stroke-width="1.5" stroke-dasharray="3,2"/>
+                    <path d="M40 62 C40 42, 60 32, 60 26 C60 32, 80 42, 80 62 Z" fill="#15803d"/>
+                    <text x="60" y="94" font-size="9" font-weight="bold" fill="#78350f" text-anchor="middle" font-family="Hind Siliguri">নূরুল হারামাইন</text>
+                </svg>
+            </div>
+
+            <div class="title-box">
+                <h1 class="madrasa-name" id="dispMadrasaName">দারুল উলূম নূরুল হারামাইন মাদরাসা</h1>
+                <p class="madrasa-address" id="dispMadrasaAddress">সখিপুর পৌরসভা, সখিপুর, টাঙ্গাইল।</p>
+                <p class="exam-title" id="dispExamTitle">দ্বিতীয় সাময়িক পরীক্ষা : ২০২৬</p>
+                <div class="class-title" id="dispClassTitle">জামাত : দ্বিতীয় শ্রেণী</div>
+            </div>
+
+            <div class="grade-chart-box">
+                <table class="grade-table">
+                    <thead>
+                        <tr><th colspan="2">গ্রেড বিন্যাস</th></tr>
+                        <tr id="gradeChartHeader"><th>গ্রেড</th><th>প্রাপ্ত নম্বর</th></tr>
+                    </thead>
+                    <tbody id="gradeChartBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- মূল ফলাফল ট্যাবুলেশন টেবিল -->
+        <div class="table-responsive-wrapper">
+            <table class="result-table">
+                <thead>
+                    <tr id="tableHeaderRow"></tr>
+                </thead>
+                <tbody id="resultTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- ফুটার স্বাক্ষর অংশ -->
+        <div class="footer-signatures">
+            <div class="sig-line">নাজেমে তালীমাত</div>
+            <div class="sig-line">পরীক্ষা নিয়ন্ত্রকের স্বাক্ষর</div>
+            <div class="sig-line">মুহতামিম / অধ্যক্ষের স্বাক্ষর</div>
+        </div>
+
+        <!-- ডেভেলপার ফুটার -->
+        <div class="developer-footer">
+            Developed by <span>Md. Raiyan Sikder</span> . Junior Software Developer & Security Specialist. <br> 
+            Darul Uloom Noorul Haramain Madrasha, Sakhipur, Tangail.
+        </div>
+    </div>
+
+    <!-- ১. একসাথে সকল শিক্ষার্থীর নম্বর এন্ট্রি মোডাল -->
+    <div id="bulkEntryModal" class="modal-overlay no-print">
+        <div class="modal-content" style="max-width: 1150px; width: 95%;">
+            <div class="modal-header">
+                <h3>📝 একসাথে নম্বর এন্ট্রি ও নতুন শিক্ষার্থী যুক্ত করুন</h3>
+                <button class="close-btn" onclick="closeBulkEntryModal()">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <button type="button" class="btn btn-primary" onclick="addBulkRow()">➕ New Student Add</button>
+                <span style="font-size: 13px; color: #475569;">প্রতিটি লাইনে শিক্ষার্থীর তথ্য ও নম্বর বসিয়ে একসাথে সংরক্ষণ করুন।</span>
+            </div>
+
+            <div style="max-height: 55vh; overflow-y: auto; border: 1px solid #cbd5e1; margin-bottom: 15px;">
+                <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 13px;" id="bulkTable">
+                    <thead>
+                        <tr style="background: #e2e8f0; position: sticky; top: 0; z-index: 10;" id="bulkTableHeader">
+                            <th>দাখিলা</th>
+                            <th>নাম</th>
+                            <th>অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bulkTableBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" style="background:#e2e8f0; color:#334155;" onclick="closeBulkEntryModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveBulkMarks()">সব নম্বর একসাথে সংরক্ষণ করুন </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ২. একক শিক্ষার্থী যোগ বা এডিট মোডাল -->
+    <div id="studentModal" class="modal-overlay no-print">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3 id="modalTitle">শিক্ষার্থীর নম্বর যোগ করুন</h3>
+                <button class="close-btn" onclick="closeStudentModal()">&times;</button>
+            </div>
+            <form id="studentForm" onsubmit="saveStudent(event)">
+                <input type="hidden" id="editIndex" value="-1">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>দাখিলা নং (Roll/ID) *</label>
+                        <input type="text" id="inDakhila" required placeholder="যেমন : 26001">
+                    </div>
+                    <div class="form-group">
+                        <label>পরীক্ষার্থীর নাম *</label>
+                        <input type="text" id="inName" required placeholder="যেমন: মোঃ শোয়াইব ইসলাম">
+                    </div>
+                    <div class="form-group">
+                        <label>পিতার নাম</label>
+                        <input type="text" id="inFather" placeholder="পিতার নাম লিখুন">
+                    </div>
+                    <div class="form-group">
+                        <label>মাতার নাম</label>
+                        <input type="text" id="inMother" placeholder="মাতার নাম লিখুন">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>ঠিকানা (গ্রাম/এলাকা)</label>
+                        <input type="text" id="inLocation" placeholder="যেমন: সখিপুর, টাঙ্গাইল">
+                    </div>
+                </div>
+                <div id="modalSubjectsContainer" class="form-grid" style="margin-top: 10px;"></div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn" style="background:#e2e8f0; color:#334155;" onclick="closeStudentModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ৩. প্রতিষ্ঠান ও লোগো আপলোড মোডাল -->
+    <div id="headerModal" class="modal-overlay no-print">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>প্রতিষ্ঠান, পরীক্ষার তথ্য ও লোগো ফরম্যাট</h3>
+                <button class="close-btn" onclick="closeHeaderModal()">&times;</button>
+            </div>
+            <form onsubmit="saveHeaderInfo(event)">
+                <div class="form-grid" style="grid-template-columns: 1fr;">
+                    <div class="form-group"><label>মাদরাসার নাম</label><input type="text" id="inMadrasaName" required></div>
+                    <div class="form-group"><label>ঠিকানা</label><input type="text" id="inMadrasaAddress" required></div>
+                    <div class="form-group"><label>পরীক্ষার নাম ও শিক্ষাবর্ষ</label><input type="text" id="inExamTitle" required></div>
+                    <div class="form-group"><label>জামাত / শ্রেণী</label><input type="text" id="inClassTitle" required></div>
+                    <div class="form-group">
+                        <label>লোগো ছবি আপলোড করুন (PNG / JPG ফরম্যাট)</label>
+                        <input type="file" id="inLogoFile" accept="image/*">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" style="background:#e2e8f0; color:#334155;" onclick="closeHeaderModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ৪. বিষয় ম্যানেজমেন্ট মোডাল -->
+    <div id="subjectManagerModal" class="modal-overlay no-print">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>📚 বিষয় যোগ বা বাদ দিন (Subject Manager)</h3>
+                <button class="close-btn" onclick="closeSubjectManagerModal()">&times;</button>
+            </div>
+            <div style="margin-bottom: 12px; display: flex; gap: 10px;">
+                <input type="text" id="newSubjectName" placeholder="নতুন বিষয়ের নাম লিখুন..." style="flex-grow: 7; padding: 7px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <button class="btn btn-primary" onclick="addNewSubject()" style="flex-grow: 3;">➕ Subject Add </button>
+            </div>
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; padding: 10px; border-radius: 5px;" id="subjectListContainer"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="closeSubjectManagerModal(); renderAll();">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ৫. গ্রেড ম্যানেজমেন্ট মোডাল -->
+    <div id="gradeManagerModal" class="modal-overlay no-print">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <h3>📊 গ্রেড বিন্যাস ম্যানেজ করুন</h3>
+                <button class="close-btn" onclick="closeGradeManagerModal()">&times;</button>
+            </div>
+            <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+                <input type="text" id="newGradeName" placeholder="গ্রেড (যেমন: A+)" style="width: 80px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <input type="text" id="newGradeRange" placeholder="নম্বর রেঞ্জ (যেমন: ৮০% বা তদূর্ধ্ব)" style="flex-grow:1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <input type="number" id="newGradePoint" placeholder="পয়েন্ট" step="0.25" style="width: 70px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <button class="btn btn-primary" onclick="addNewGrade()">➕ যোগ করুন</button>
+            </div>
+            <div style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; padding: 8px; border-radius: 5px;" id="gradeListContainer"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="closeGradeManagerModal(); renderAll();">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ৬. ব্যক্তিগত মার্কশিট প্রিন্ট মোডাল -->
+    <div id="marksheetModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 750px; padding: 25px;">
+            <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                <h3 style="margin: 0; color: #15803d;">Results Marksheet</h3>
+                <div>
+                    <button class="btn btn-success" onclick="window.print()">🖨️ print Marksheet</button>
+                    <button class="btn btn-danger" onclick="closeMarksheetModal()" style="margin-left: 5px;">✕ Close</button>
+                </div>
+            </div>
+
+            <!-- প্রিন্টযোগ্য মূল মার্কশিট বক্স -->
+            <div id="printableMarksheet">
+                <div style="text-align: center; border-bottom: 2px solid #15803d; padding-bottom: 10px; margin-bottom: 15px;">
+                    <h2 style="font-size: 24px; margin: 0; color: #15803d;" id="mMadrasaName">দারুল উলূম নূরুল হারামাইন মাদরাসা</h2>
+                    <p style="font-size: 13.5px; margin: 3px 0; color: #333;" id="mMadrasaAddress">সখিপুর পৌরসভা, সখিপুর, টাঙ্গাইল।</p>
+                    <h4 style="font-size: 15.5px; margin: 6px 0 0 0; color: #111;" id="mExamTitle">দ্বিতীয় সাময়িক পরীক্ষা: ২০২৬</h4>
+                    <span style="display: inline-block; background: #15803d; color: #fff; padding: 3px 18px; border-radius: 12px; font-size: 13.5px; margin-top: 6px;" id="mClassTitle">জামাত: দ্বিতীয় শ্রেণী</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 14px; margin-bottom: 15px; background: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px solid #bbf7d0;">
+                    <div><strong>শিক্ষার্থীর নাম:</strong> <span id="mName"></span></div>
+                    <div><strong>দাখিলা নং ( Roll ):</strong> <span id="mDakhila"></span></div>
+                    <div><strong>পিতার নাম:</strong> <span id="mFather"></span></div>
+                    <div><strong>মাতার নাম:</strong> <span id="mMother"></span></div>
+                    <div style="grid-column: span 2;"><strong>ঠিকানা:</strong> <span id="mLocation"></span></div>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 13.5px; margin-bottom: 15px;">
+                    <thead>
+                        <tr style="background: #15803d; color: white;">
+                            <th style="border: 1px solid #15803d; padding: 7px; width: 45px;">ক্রমিক</th>
+                            <th style="border: 1px solid #15803d; padding: 7px; text-align: left; padding-left: 10px;">বিষয়ের নাম</th>
+                            <th style="border: 1px solid #15803d; padding: 7px; width: 80px;">পূর্ণমান</th>
+                            <th style="border: 1px solid #15803d; padding: 7px; width: 90px;">প্রাপ্ত নম্বর</th>
+                            <th style="border: 1px solid #15803d; padding: 7px; width: 75px;">গ্রেড</th>
+                            <th style="border: 1px solid #15803d; padding: 7px; width: 75px;">পয়েন্ট</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mSubjectsTableBody"></tbody>
+                    <tfoot>
+                        <tr style="background: #fef3c7; font-weight: bold; color: #78350f;">
+                            <td colspan="3" style="border: 1px solid #f59e0b; padding: 7px; text-align: right;">সর্বমোট ফলাফল:</td>
+                            <td style="border: 1px solid #f59e0b; padding: 7px;" id="mTotalObtained">০</td>
+                            <td style="border: 1px solid #f59e0b; padding: 7px;" id="mFinalGrade">A+</td>
+                            <td style="border: 1px solid #f59e0b; padding: 7px;" id="mFinalPoint">5.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div style="display: flex; justify-content: space-around; background: #ecfdf5; border: 1.5px solid #6ee7b7; padding: 10px; border-radius: 6px; font-size: 15px; font-weight: bold; margin-bottom: 25px;">
+                    <div>চূড়ান্ত ফলাফল : <span id="mPassStatus" style="color: #15803d;">উত্তীর্ণ</span></div>
+                    <div>মেধা স্থান : <span id="mMeritRank" style="color: #1d4ed8;">১ম</span></div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 35px; font-size: 13.5px; font-weight: bold; color: #333;">
+                    <div style="border-top: 1.5px solid #444; width: 160px; text-align: center; padding-top: 5px;">নাজেমে তালীমাত</div>
+                    <div style="border-top: 1.5px solid #444; width: 160px; text-align: center; padding-top: 5px;">পরীক্ষা নিয়ন্ত্রক</div>
+                    <div style="border-top: 1.5px solid #444; width: 160px; text-align: center; padding-top: 5px;">মুহতামিম / অধ্যক্ষ</div>
+                </div>
+
+                <!-- মার্কশিট মোডালের ভেতরে আপনার চাওয়া ফুটার -->
+                <div style="text-align: center; margin-top: 30px; padding-top: 8px; border-top: 1px dashed #cbd5e1; font-size: 12px; color: #475569; font-weight: 500;">
+                    Developed by <span style="font-weight: 700; color: #15803d;">Md. Raiyan Sikder</span> . Junior Software Developer & Security Specialist
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
