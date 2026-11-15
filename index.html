@@ -13,7 +13,7 @@
 
     <!-- কন্ট্রোল প্যানেল -->
     <div class="control-bar no-print">
-        <div class="control-title">
+        <div class="control-title" id="systemTitleBadge">
             <span>🕌</span> মাদরাসা রেজাল্ট ম্যানেজমেন্ট সিস্টেম
         </div>
         
@@ -28,6 +28,10 @@
                 <span>📝</span> একসাথে নম্বর এন্ট্রি
             </button>
             
+            <button class="btn btn-warning" onclick="toggleWifaqMode()" id="wifaqToggleBtn" style="background: #9333ea; color: white;">
+                <span>🌟</span> বেফাক মোড: বন্ধ
+            </button>
+
             <button class="btn btn-warning" onclick="openHeaderModal()">
                 <span>✏️</span> প্রতিষ্ঠান ও লোগো
             </button>
@@ -67,7 +71,7 @@
             <div class="title-box">
                 <h1 class="madrasa-name" id="dispMadrasaName">দারুল উলূম নূরুল হারামাইন মাদরাসা</h1>
                 <p class="madrasa-address" id="dispMadrasaAddress">সখিপুর পৌরসভা, সখিপুর, টাঙ্গাইল।</p>
-                <p class="exam-title" id="dispExamTitle">দ্বিতীয় সাময়িক পরীক্ষা: ২০২৬</p>
+                <p class="exam-title" id="dispExamTitle">বেফাকুল মাদারিসিল আরাবিয়া বাংলাদেশ - ২০২৬</p>
                 <div class="class-title" id="dispClassTitle">জামাত: হিফজ বিভাগ - ৩পারা</div>
             </div>
 
@@ -94,7 +98,7 @@
 
         <!-- ফুটার স্বাক্ষর অংশ -->
         <div class="footer-signatures">
-            <div class="sig-line">নাজেমে তালীমাত স্বাক্ষর</div>
+            <div class="sig-line">শ্রেণী শিক্ষকের স্বাক্ষর</div>
             <div class="sig-line">পরীক্ষা নিয়ন্ত্রকের স্বাক্ষর</div>
             <div class="sig-line">মুহতামিম / অধ্যক্ষের স্বাক্ষর</div>
         </div>
@@ -204,16 +208,19 @@
         </div>
     </div>
 
-    <!-- ৪. বিষয় ম্যানেজমেন্ট মোডাল -->
+    <!-- ৪. বিষয় ম্যানেজমেন্ট মোডাল (ঐচ্ছিক বিষয় সহ) -->
     <div id="subjectManagerModal" class="modal-overlay no-print">
         <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
-                <h3>📚 বিষয় যোগ বা বাদ দিন (Subject Manager)</h3>
+                <h3>📚 বিষয় ও ঐচ্ছিক বিষয় ম্যানেজ করুন</h3>
                 <button class="close-btn" onclick="closeSubjectManagerModal()">&times;</button>
             </div>
-            <div style="margin-bottom: 12px; display: flex; gap: 10px;">
-                <input type="text" id="newSubjectName" placeholder="নতুন বিষয়ের নাম লিখুন..." style="flex-grow: 7; padding: 7px; border: 1px solid #cbd5e1; border-radius: 4px;">
-                <button class="btn btn-primary" onclick="addNewSubject()" style="flex-grow: 3;">➕ বিষয় যোগ করুন</button>
+            <div style="margin-bottom: 12px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="newSubjectName" placeholder="নতুন বিষয়ের নাম..." style="flex-grow: 5; padding: 7px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                    <input type="checkbox" id="newSubjectOptional"> ঐচ্ছিক (Optional)
+                </label>
+                <button class="btn btn-primary" onclick="addNewSubject()" style="flex-grow: 2;">➕ যোগ</button>
             </div>
             <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; padding: 10px; border-radius: 5px;" id="subjectListContainer"></div>
             <div class="modal-footer">
@@ -230,10 +237,10 @@
                 <button class="close-btn" onclick="closeGradeManagerModal()">&times;</button>
             </div>
             <div style="margin-bottom: 12px; display: flex; gap: 8px;">
-                <input type="text" id="newGradeName" placeholder="গ্রেড (যেমন: A+)" style="width: 80px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <input type="text" id="newGradeName" placeholder="গ্রেড (যেমন: ممتاز)" style="width: 80px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
                 <input type="text" id="newGradeRange" placeholder="নম্বর রেঞ্জ (যেমন: ৮০% - ১০০%)" style="flex-grow:1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
                 <input type="number" id="newGradePoint" placeholder="পয়েন্ট" step="0.25" style="width: 70px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
-                <button class="btn btn-primary" onclick="addNewGrade()">➕ যোগ করুন</button>
+                <button class="btn btn-primary" onclick="addNewGrade()">➕ যোগ</button>
             </div>
             <div style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; padding: 8px; border-radius: 5px;" id="gradeListContainer"></div>
             <div class="modal-footer">
@@ -258,7 +265,7 @@
                 <div style="text-align: center; border-bottom: 2px solid #15803d; padding-bottom: 10px; margin-bottom: 15px;">
                     <h2 style="font-size: 24px; margin: 0; color: #15803d;" id="mMadrasaName">দারুল উলূম নূরুল হারামাইন মাদরাসা</h2>
                     <p style="font-size: 13.5px; margin: 3px 0; color: #333;" id="mMadrasaAddress">সখিপুর পৌরসভা, সখিপুর, টাঙ্গাইল।</p>
-                    <h4 style="font-size: 15.5px; margin: 6px 0 0 0; color: #111;" id="mExamTitle">দ্বিতীয় সাময়িক পরীক্ষা: ২০২৬</h4>
+                    <h4 style="font-size: 15.5px; margin: 6px 0 0 0; color: #111;" id="mExamTitle">বেফাকুল মাদারিসিল আরাবিয়া বাংলাদেশ - ২০২৬</h4>
                     <span style="display: inline-block; background: #15803d; color: #fff; padding: 3px 18px; border-radius: 12px; font-size: 13.5px; margin-top: 6px;" id="mClassTitle">জামাত: হিফজ বিভাগ - ৩পারা</span>
                 </div>
 
@@ -277,7 +284,7 @@
                             <th style="border: 1px solid #15803d; padding: 7px; text-align: left; padding-left: 10px;">বিষয়ের নাম</th>
                             <th style="border: 1px solid #15803d; padding: 7px; width: 80px;">পূর্ণমান</th>
                             <th style="border: 1px solid #15803d; padding: 7px; width: 90px;">প্রাপ্ত নম্বর</th>
-                            <th style="border: 1px solid #15803d; padding: 7px; width: 75px;">গ্রেড</th>
+                            <th style="border: 1px solid #15803d; padding: 7px; width: 75px;">গ্রেড / বিভাগ</th>
                             <th style="border: 1px solid #15803d; padding: 7px; width: 75px;">পয়েন্ট</th>
                         </tr>
                     </thead>
@@ -287,18 +294,18 @@
                             <td colspan="2" style="border: 1px solid #f59e0b; padding: 7px; text-align: right;">সর্বমোট:</td>
                             <td style="border: 1px solid #f59e0b; padding: 7px;" id="mTotalMaxMarks">0</td>
                             <td style="border: 1px solid #f59e0b; padding: 7px;" id="mTotalObtained">0</td>
-                            <td colspan="2" style="border: 1px solid #f59e0b; padding: 7px;" id="mFinalGradePoint">A+ (5.00)</td>
+                            <td colspan="2" style="border: 1px solid #f59e0b; padding: 7px;" id="mFinalGradePoint">ممتاز (5.00)</td>
                         </tr>
                     </tfoot>
                 </table>
 
                 <div style="display: flex; justify-content: space-around; background: #ecfdf5; border: 1.5px solid #6ee7b7; padding: 10px; border-radius: 6px; font-size: 15px; font-weight: bold; margin-bottom: 25px;">
-                    <div>চূড়ান্ত ফলাফল: <span id="mPassStatus" style="color: #15803d;">উত্তীর্ণ</span></div>
+                    <div>ফলাফল: <span id="mPassStatus" style="color: #15803d;">উত্তীর্ণ</span></div>
                     <div>মেধা স্থান: <span id="mMeritRank" style="color: #1d4ed8;">1st</span></div>
                 </div>
 
                 <div style="display: flex; justify-content: space-between; margin-top: 35px; font-size: 13.5px; font-weight: bold; color: #333;">
-                    <div style="border-top: 1.5px solid #444; width: 160px; text-align: center; padding-top: 5px;">নাজেমে তালীমাত স্বাক্ষর</div>
+                    <div style="border-top: 1.5px solid #444; width: 160px; text-align: center; padding-top: 5px;">শ্রেণী শিক্ষকের স্বাক্ষর</div>
                     <div style="border-top: 1.5px solid #444; width: 160px; text-align: center; padding-top: 5px;">পরীক্ষা নিয়ন্ত্রক</div>
                     <div style="border-top: 1.5px solid #444; width: 160px; text-align: center; padding-top: 5px;">মুহতামিম / অধ্যক্ষ</div>
                 </div>

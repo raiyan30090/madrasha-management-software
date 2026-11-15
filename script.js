@@ -1,51 +1,90 @@
 const defaultSubjects = [
-    "কালিমা ও আসমাউল হুসনাহ",
-    "বাংলা",
-    "ইংরেজী",
-    "কুরআন মাজীদ ও তাজভীদ"
+    { name: "কালিমা ও আসমাউল হুসনাহ", optional: false },
+    { name: "বাংলা", optional: false },
+    { name: "ইংরেজী", optional: false },
+    { name: "কুরআন মাজীদ ও তাজভীদ", optional: false },
+    { name: "আরবী লেখা", optional: true }
 ];
 
 const defaultGrades = [
-    { grade: "A+", range: "৮০% - ১০০%", point: 5.00, minPercent: 80 },
-    { grade: "A", range: "৭০% - ৭৯%", point: 4.00, minPercent: 70 },
-    { grade: "A-", range: "৬০% - ৬৯%", point: 3.50, minPercent: 60 },
-    { grade: "B", range: "৫০% - ৫৯%", point: 3.00, minPercent: 50 },
-    { grade: "C", range: "৪০% - ৪৯%", point: 2.50, minPercent: 40 },
-    { grade: "D", range: "৩৩% - ৩৯%", point: 2.00, minPercent: 33 },
-    { grade: "F", range: "০% - ৩২%", point: 0.00, minPercent: 0 }
+    { grade: "ممتاز (A+)", range: "৮০% - ১০০%", point: 5.00, minPercent: 80 },
+    { grade: "জায়্যিদ জিদ্দান (A)", range: "৭০% - ৭৯%", point: 4.00, minPercent: 70 },
+    { grade: "জায়্যিদ (A-)", range: "৬০% - ৬৯%", point: 3.50, minPercent: 60 },
+    { grade: "মকবুল (B)", range: "৫০% - ৫৯%", point: 3.00, minPercent: 50 },
+    { grade: "রাসিব (F)", range: "০% - ৪৯%", point: 0.00, minPercent: 0 }
 ];
 
 const defaultStudents = [
-    { dakhila: "2671", name: "মোঃ শোয়াইব ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [90, 95, 85, 90] },
-    { dakhila: "2634", name: "সাএদা ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [88, 85, 90, 89] }
+    { dakhila: "2671", name: "মোঃ শোয়াইব ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [90, 95, 85, 90, 75] },
+    { dakhila: "2634", name: "সাএদা ইসলাম", father: "প্রযোজ্য নয়", mother: "প্রযোজ্য নয়", location: "সখিপুর, টাঙ্গাইল", marks: [88, 25, 30, 89, 70] }
 ];
 
 const defaultHeaderInfo = {
     madrasaName: "দারুল উলূম নূরুল হারামাইন মাদরাসা",
     madrasaAddress: "সখিপুর পৌরসভা, সখিপুর, টাঙ্গাইল।",
-    examTitle: "দ্বিতীয় সাময়িক পরীক্ষা: ২০২৬",
+    examTitle: "বেফাকুল মাদারিসিল আরাবিয়া বাংলাদেশ - ২০২৬",
     classTitle: "জামাত: হিফজ বিভাগ - ৩পারা",
     logoData: null
 };
 
-let subjectsList = JSON.parse(localStorage.getItem('madrasa_dynamic_subjects')) || [...defaultSubjects];
+let isWifaqMode = JSON.parse(localStorage.getItem('madrasa_wifaq_mode')) || false;
+let subjectsList = JSON.parse(localStorage.getItem('madrasa_dynamic_subjects')) || JSON.parse(JSON.stringify(defaultSubjects));
 let gradesList = JSON.parse(localStorage.getItem('madrasa_dynamic_grades')) || [...defaultGrades];
 let students = JSON.parse(localStorage.getItem('madrasa_dynamic_students')) || JSON.parse(JSON.stringify(defaultStudents));
 let headerInfo = JSON.parse(localStorage.getItem('madrasa_dynamic_header')) || { ...defaultHeaderInfo };
+
+function toggleWifaqMode() {
+    isWifaqMode = !isWifaqMode;
+    localStorage.setItem('madrasa_wifaq_mode', JSON.stringify(isWifaqMode));
+    updateWifaqUIButton();
+    renderAll();
+}
+
+function updateWifaqUIButton() {
+    const btn = document.getElementById('wifaqToggleBtn');
+    const badge = document.getElementById('systemTitleBadge');
+    if (btn) {
+        btn.innerHTML = isWifaqMode ? `<span>🌟</span> বেফাক মোড: চালু` : `<span>🌟</span> বেফাক মোড: বন্ধ`;
+        btn.style.background = isWifaqMode ? "#15803d" : "#9333ea";
+    }
+    if (badge) {
+        badge.innerHTML = isWifaqMode ? `<span>📜</span> বেফাক রেজাল্ট ম্যানেজমেন্ট সিস্টেম` : `<span>🕌</span> মাদরাসা রেজাল্ট ম্যানেজমেন্ট সিস্টেম`;
+    }
+}
 
 function calculateResult(marks) {
     const totalSubjects = subjectsList.length;
     const maxTotal = totalSubjects * 100;
     const total = marks.reduce((sum, m) => sum + Number(m), 0);
-    const hasFailedSubject = marks.some(m => Number(m) < 33);
-    const passMarkSum = totalSubjects * 33;
+    
+    let failCount = 0;
+    marks.forEach((m) => {
+        if (Number(m) < 33) {
+            failCount++;
+        }
+    });
 
-    if (hasFailedSubject || total < passMarkSum) {
-        return { total, maxTotal, grade: "F", point: "0.00", passed: false };
+    let passed = true;
+    if (isWifaqMode) {
+        if (failCount > 2) {
+            passed = false;
+        } else {
+            passed = true;
+        }
+    } else {
+        const hasFailedSubject = marks.some(m => Number(m) < 33);
+        const passMarkSum = totalSubjects * 33;
+        if (hasFailedSubject || total < passMarkSum) {
+            passed = false;
+        }
+    }
+
+    if (!passed) {
+        return { total, maxTotal, grade: "রাসিব (F)", point: "0.00", passed: false, failCount };
     }
 
     const percentage = (total / maxTotal) * 100;
-    let matchedGrade = gradesList.filter(g => g.grade !== "F").sort((a,b) => b.minPercent - a.minPercent)[0] || { grade: "D", point: 2.00 };
+    let matchedGrade = gradesList.filter(g => g.grade.includes("রাসিব") === false).sort((a,b) => b.minPercent - a.minPercent)[0] || { grade: "মকবুল (B)", point: 3.00 };
     for (let g of gradesList) {
         if (percentage >= g.minPercent) {
             matchedGrade = g;
@@ -53,7 +92,7 @@ function calculateResult(marks) {
         }
     }
 
-    return { total, maxTotal, grade: matchedGrade.grade, point: matchedGrade.point.toFixed(2), passed: true };
+    return { total, maxTotal, grade: matchedGrade.grade, point: matchedGrade.point.toFixed(2), passed: true, failCount };
 }
 
 function computeMeritRanks(studentList) {
@@ -107,9 +146,11 @@ function renderTableHeaders() {
     
     let subHeadersHtml = '';
     subjectsList.forEach((sub) => {
+        const subName = typeof sub === 'string' ? sub : sub.name;
+        const isOpt = typeof sub === 'object' && sub.optional ? ' (ঐচ্ছিক)' : '';
         subHeadersHtml += `
             <th style="min-width: 65px;">
-                ${sub}<br>
+                ${subName}${isOpt}<br>
                 <span style="font-size: 11px; font-weight: normal; color: #333;">পূর্ণমান - 100</span>
             </th>
         `;
@@ -122,7 +163,7 @@ function renderTableHeaders() {
         ${subHeadersHtml}
         <th style="width: 65px; background: #fef3c7; color: #78350f;">মোট নম্বর</th>
         <th style="width: 65px; background: #ecfdf5; color: #065f46;">প্রাপ্ত নম্বর</th>
-        <th style="width: 45px;">গ্রেড</th>
+        <th style="width: 65px;">গ্রেড / বিভাগ</th>
         <th style="width: 48px;">পয়েন্ট</th>
         <th style="width: 42px;">মেধা</th>
         <th class="no-print" style="width: 75px;">অ্যাকশন</th>
@@ -139,6 +180,7 @@ function renderTableHeaders() {
 
 function renderTable() {
     renderTableHeaders();
+    updateWifaqUIButton();
     const tbody = document.getElementById('resultTableBody');
     if (!tbody) return;
     
@@ -172,13 +214,13 @@ function renderTable() {
             ${marksCells}
             <td style="font-weight: 700; background: #fffbeb;">${st.maxTotal}</td>
             <td style="font-weight: 700; background: #f0fdf4; color: #15803d;">${st.total}</td>
-            <td class="${!st.passed ? 'grade-f' : ''}" style="font-weight: 600;">${st.grade}</td>
+            <td class="${!st.passed ? 'grade-f' : ''}" style="font-weight: 600; font-size:12px;">${st.grade}</td>
             <td>${st.point}</td>
             <td style="font-weight: 600;">${meritDisplay}</td>
             <td class="no-print action-cell">
-                <button class="icon-btn" title="মার্কশিট" onclick="viewMarksheet(${st.originalIndex})">Marksheet</button>
-                <button class="icon-btn" title="এডিট" onclick="openEditModal(${st.originalIndex})">Edit</button>
-                <button class="icon-btn del" title="ডিলিট" onclick="deleteStudent(${st.originalIndex})">Delete</button>
+                <button class="icon-btn" title="মার্কশিট" onclick="viewMarksheet(${st.originalIndex})">📄</button>
+                <button class="icon-btn" title="এডিট" onclick="openEditModal(${st.originalIndex})">✏️</button>
+                <button class="icon-btn del" title="ডিলিট" onclick="deleteStudent(${st.originalIndex})">🗑️</button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -190,7 +232,8 @@ function openBulkEntryModal() {
     if (theadRow) {
         let thHtml = `<th style="width:60px;">দাখিলা</th><th style="min-width:140px; text-align:left; padding-left:8px;">নাম</th>`;
         subjectsList.forEach((sub) => {
-            thHtml += `<th>${sub} <br><span style="font-size:10px; font-weight:normal;">(100)</span></th>`;
+            const subName = typeof sub === 'string' ? sub : sub.name;
+            thHtml += `<th>${subName} <br><span style="font-size:10px; font-weight:normal;">(100)</span></th>`;
         });
         thHtml += `<th style="width:50px;">অ্যাকশন</th>`;
         theadRow.innerHTML = thHtml;
@@ -216,7 +259,7 @@ function renderBulkRows() {
             tdHtml += `<td><input type="number" min="0" max="100" class="b-mark-${subIndex}" value="${mark}" style="width:55px; padding:4px; text-align:center; border:1px solid #cbd5e1; border-radius:4px;"></td>`;
         });
 
-        tdHtml += `<td><button type="button" class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="removeBulkRow(this)">Remove</button></td>`;
+        tdHtml += `<td><button type="button" class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="removeBulkRow(this)">❌</button></td>`;
         tbody.innerHTML += `<tr class="bulk-row">${tdHtml}</tr>`;
     });
 }
@@ -234,7 +277,7 @@ function addBulkRow() {
         tdHtml += `<td><input type="number" min="0" max="100" class="b-mark-${subIndex}" value="80" style="width:55px; padding:4px; text-align:center; border:1px solid #cbd5e1; border-radius:4px;"></td>`;
     });
 
-    tdHtml += `<td><button type="button" class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="removeBulkRow(this)">Remove</button></td>`;
+    tdHtml += `<td><button type="button" class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="removeBulkRow(this)">❌</button></td>`;
     
     const tr = document.createElement('tr');
     tr.className = 'bulk-row';
@@ -386,11 +429,11 @@ function renderGradeManagerList() {
     gradesList.forEach((g, i) => {
         container.innerHTML += `
             <div style="display: flex; gap: 6px; margin-bottom: 6px; align-items: center; font-size: 13px;">
-                <input type="text" id="gName_${i}" value="${g.grade}" style="width: 55px; padding: 4px; border:1px solid #cbd5e1; border-radius:4px;">
+                <input type="text" id="gName_${i}" value="${g.grade}" style="width: 85px; padding: 4px; border:1px solid #cbd5e1; border-radius:4px;">
                 <input type="text" id="gRange_${i}" value="${g.range}" style="flex-grow:1; padding: 4px; border:1px solid #cbd5e1; border-radius:4px;">
                 <input type="number" id="gPoint_${i}" value="${g.point}" step="0.25" style="width: 60px; padding: 4px; border:1px solid #cbd5e1; border-radius:4px;">
-                <button class="btn btn-danger" style="padding:3px 6px; font-size:11px;" onclick="removeGrade(${i})">Remove</button>
-                <button class="btn btn-primary" style="padding:3px 6px; font-size:11px;" onclick="updateGrade(${i})">Update</button>
+                <button class="btn btn-danger" style="padding:3px 6px; font-size:11px;" onclick="removeGrade(${i})">❌</button>
+                <button class="btn btn-primary" style="padding:3px 6px; font-size:11px;" onclick="updateGrade(${i})">💾</button>
             </div>
         `;
     });
@@ -439,12 +482,17 @@ function renderSubjectManagerList() {
     if (!container) return;
     container.innerHTML = '';
     subjectsList.forEach((sub, i) => {
+        const subName = typeof sub === 'string' ? sub : sub.name;
+        const isOpt = typeof sub === 'object' && sub.optional;
         container.innerHTML += `
             <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
-                <span style="font-weight:bold; width:25px;">${i+1}.</span>
-                <input type="text" id="subInput_${i}" value="${sub}" style="flex-grow:1; padding:5px; border:1px solid #cbd5e1; border-radius:4px;">
-                <button class="btn btn-danger" style="padding:4px 8px; font-size:12px;" onclick="removeSubject(${i})">Remove</button>
-                <button class="btn btn-primary" style="padding:4px 8px; font-size:12px;" onclick="updateSingleSubject(${i})">Update</button>
+                <span style="font-weight:bold; width:20px;">${i+1}.</span>
+                <input type="text" id="subInput_${i}" value="${subName}" style="flex-grow:1; padding:5px; border:1px solid #cbd5e1; border-radius:4px;">
+                <label style="font-size:12px; display:flex; align-items:center; gap:3px;">
+                    <input type="checkbox" id="subOpt_${i}" ${isOpt ? 'checked' : ''}> ঐচ্ছিক
+                </label>
+                <button class="btn btn-danger" style="padding:4px 8px; font-size:12px;" onclick="removeSubject(${i})">❌</button>
+                <button class="btn btn-primary" style="padding:4px 8px; font-size:12px;" onclick="updateSingleSubject(${i})">💾</button>
             </div>
         `;
     });
@@ -458,11 +506,14 @@ function closeSubjectManagerModal() { document.getElementById('subjectManagerMod
 
 function addNewSubject() {
     const input = document.getElementById('newSubjectName');
+    const optionalChk = document.getElementById('newSubjectOptional');
     const val = input.value.trim();
     if (!val) return alert('দয়া করে বিষয়ের নাম লিখুন!');
-    subjectsList.push(val);
+    
+    subjectsList.push({ name: val, optional: optionalChk.checked });
     students.forEach(st => st.marks.push(80));
     input.value = '';
+    optionalChk.checked = false;
     saveAll();
     renderSubjectManagerList();
     renderAll();
@@ -470,8 +521,10 @@ function addNewSubject() {
 
 function updateSingleSubject(i) {
     const val = document.getElementById(`subInput_${i}`).value.trim();
+    const optionalChk = document.getElementById(`subOpt_${i}`).checked;
     if(!val) return alert('বিষয়ের নাম খালি রাখা যাবে না!');
-    subjectsList[i] = val;
+    
+    subjectsList[i] = { name: val, optional: optionalChk };
     saveAll();
     renderAll();
     alert('বিষয় আপডেট হয়েছে!');
@@ -479,7 +532,8 @@ function updateSingleSubject(i) {
 
 function removeSubject(i) {
     if(subjectsList.length <= 1) return alert('কমপক্ষে একটি বিষয় রাখা আবশ্যক!');
-    if(confirm(`"${subjectsList[i]}" বিষয়টি মুছে ফেলতে চান?`)) {
+    const subName = typeof subjectsList[i] === 'string' ? subjectsList[i] : subjectsList[i].name;
+    if(confirm(`"${subName}" বিষয়টি মুছে ফেলতে চান?`)) {
         subjectsList.splice(i, 1);
         students.forEach(st => st.marks.splice(i, 1));
         saveAll();
@@ -493,10 +547,12 @@ function generateModalSubjectInputs(studentMarks = null) {
     if (!container) return;
     container.innerHTML = '';
     subjectsList.forEach((sub, i) => {
+        const subName = typeof sub === 'string' ? sub : sub.name;
+        const isOpt = typeof sub === 'object' && sub.optional ? ' (ঐচ্ছিক)' : '';
         const val = studentMarks ? studentMarks[i] : 80;
         container.innerHTML += `
             <div class="form-group">
-                <label>${i+1}. ${sub} (100)</label>
+                <label>${i+1}. ${subName}${isOpt} (100)</label>
                 <input type="number" id="modalSub_${i}" min="0" max="100" required value="${val}">
             </div>
         `;
@@ -522,15 +578,17 @@ function viewMarksheet(index) {
 
     let rowsHtml = '';
     subjectsList.forEach((sub, i) => {
+        const subName = typeof sub === 'string' ? sub : sub.name;
+        const isOpt = typeof sub === 'object' && sub.optional ? ' (ঐচ্ছিক)' : '';
         const mark = st.marks[i];
         const isFail = mark < 33;
         rowsHtml += `
             <tr>
                 <td style="border: 1px solid #15803d; padding: 6px;">${i+1}</td>
-                <td style="border: 1px solid #15803d; padding: 6px; text-align: left; padding-left: 10px;">${sub}</td>
+                <td style="border: 1px solid #15803d; padding: 6px; text-align: left; padding-left: 10px;">${subName}${isOpt}</td>
                 <td style="border: 1px solid #15803d; padding: 6px;">100</td>
                 <td style="border: 1px solid #15803d; padding: 6px; font-weight: bold; color: ${isFail ? 'red' : '#000'};">${mark}</td>
-                <td style="border: 1px solid #15803d; padding: 6px;">${isFail ? 'F' : res.grade}</td>
+                <td style="border: 1px solid #15803d; padding: 6px;">${isFail ? 'রাসিব' : res.grade}</td>
                 <td style="border: 1px solid #15803d; padding: 6px;">${isFail ? '0.00' : res.point}</td>
             </tr>
         `;
@@ -551,7 +609,7 @@ function viewMarksheet(index) {
     }
 
     const passStatusEl = document.getElementById('mPassStatus');
-    passStatusEl.innerText = res.passed ? "কৃতকার্য" : "অকৃতকার্য";
+    passStatusEl.innerText = res.passed ? "উত্তীর্ণ" : "অনুত্তীর্ণ (ফেল)";
     passStatusEl.style.color = res.passed ? "#15803d" : "#dc2626";
     
     document.getElementById('mMeritRank').innerText = meritText;
@@ -576,7 +634,8 @@ function renderAll() {
 function resetDefaultData() {
     if (confirm("আপনি কি সব তথ্য রিসেট করতে চান?")) {
         localStorage.clear();
-        subjectsList = [...defaultSubjects];
+        isWifaqMode = false;
+        subjectsList = JSON.parse(JSON.stringify(defaultSubjects));
         gradesList = [...defaultGrades];
         students = JSON.parse(JSON.stringify(defaultStudents));
         headerInfo = { ...defaultHeaderInfo };

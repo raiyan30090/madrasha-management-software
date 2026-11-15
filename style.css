@@ -58,7 +58,15 @@ body { font-family: 'Hind Siliguri', 'Noto Serif Bengali', sans-serif; backgroun
 .result-table tbody tr:hover { background-color: var(--row-hover); }
 
 .col-name { text-align: left; padding-left: 8px; min-width: 160px; font-weight: 500; }
-.fail-mark { color: #dc2626; font-weight: 700; text-decoration: underline; }
+
+/* ফেল করা ঘরের জন্য হালকা কালচে/ছাইরঙ ব্যাকগ্রাউন্ড এবং লাল টেক্সট */
+.fail-mark { 
+    color: #dc2626 !important; 
+    font-weight: 700 !important; 
+    text-decoration: underline; 
+    background-color: #e2e8f0 !important; 
+}
+
 .grade-f { color: #dc2626; font-weight: 700; }
 .action-cell { white-space: nowrap; }
 
