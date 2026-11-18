@@ -7,7 +7,7 @@ A comprehensive institutional result management web application built to generat
 
 ## 🖼️ Project Screenshot
 <p align="center">
-  <img src="https://via.placeholder.com/800x450.png?text=Madrasa+Management+System" alt="Madrasa System Screenshot" width="100%">
+  <img src="Screenshot 2026-11-15 094013.png" width="100%">
 </p>
 
 ---
